@@ -111,7 +111,7 @@ module.exports = (path, opts) => {
 
       return getPaths(path, relPath, ext)
       .then((paths) => {
-        const state = ctx.state ? Object.assign(locals, ctx.state) : locals
+        const state = opts.mergeState ? Object.assign(locals, ctx.state || {}) : locals
         debug('render `%s` with %j', paths.rel, state)
         ctx.type = 'text/html'
 
