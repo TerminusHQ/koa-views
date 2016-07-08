@@ -13,7 +13,7 @@ const join = require('path').join
 const resolve = require('path').resolve
 const send = require('koa-send')
 const _stat = require('fs').stat
-const consolidate = require('consolidate')
+const consolidate = require('@terminus/consolidate')
 
 /**
 * Check if `ext` is html.
