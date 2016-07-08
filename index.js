@@ -86,7 +86,8 @@ function getPaths(abs, rel, ext) {
  */
 module.exports = (path, opts) => {
   opts = defaults(opts || {}, {
-    extension: 'html'
+    extension: 'html',
+    mergeState: true
   })
 
   debug('options: %j', opts)
@@ -111,7 +112,7 @@ module.exports = (path, opts) => {
 
       return getPaths(path, relPath, ext)
       .then((paths) => {
-        const state = opts.mergeState ? Object.assign(locals, ctx.state || {}) : locals
+        const state = (opts.mergeState && ctx.state) ? Object.assign(locals, ctx.state) : locals
         debug('render `%s` with %j', paths.rel, state)
         ctx.type = 'text/html'
 
