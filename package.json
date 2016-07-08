@@ -1,6 +1,6 @@
 {
   "name": "@terminus/koa-views",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "description": "Template rendering middleware for koa",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@f/defaults": "^1.0.1",
-    "consolidate": "^0.14.1",
+    "@terminus/consolidate": "^0.14.2",
     "debug": "^2.1.3",
     "koa-send": "^3.1.0"
   },
