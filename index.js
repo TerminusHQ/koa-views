@@ -11,7 +11,7 @@ const dirname = require('path').dirname
 const extname = require('path').extname
 const join = require('path').join
 const resolve = require('path').resolve
-const send = require('koa-send')
+const send = require('@terminus/koa-send')
 const _stat = require('fs').stat
 const consolidate = require('@terminus/consolidate')
 
