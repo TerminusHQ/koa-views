@@ -1,6 +1,6 @@
 {
   "name": "@terminus/koa-views",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "description": "Template rendering middleware for koa",
   "main": "src/index.js",
   "scripts": {
