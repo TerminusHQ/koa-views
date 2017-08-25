@@ -1,6 +1,7 @@
 
 const request = require('supertest')
-const views = require('../')
+const views = require('../src')
+const path = require('path')
 const Koa = require('koa')
 require('should')
 
@@ -129,6 +130,35 @@ describe('koa-views', function () {
       .expect(200, done)
   })
 
+  it('allows view options to be passed in', function (done) {
+    const app = new Koa()
+      .use(views(__dirname, {
+        map: { hbs: 'handlebars' },
+        options: {
+          helpers: {
+            uppercase: (str) => str.toUpperCase()
+          },
+
+          partials: {
+            subTitle: './view-options-partial'
+          }
+        }
+      }))
+      .use(function (ctx) {
+        ctx.state = { title: 'my title', author: 'queckezz' }
+        return ctx.render('./fixtures/view-options.hbs')
+      })
+
+    const server = request(app.listen())
+    server.get('/')
+      .expect(/MY TITLE/)
+      .expect(200, function() {
+        server.get('/')
+          .expect(/MY TITLE/)
+          .expect(200, done)
+      })
+  })
+
   // #23 && #27
   it('given a directory it should try to require index.[ext]', function (done) {
     const app = new Koa()
@@ -152,6 +182,97 @@ describe('koa-views', function () {
 
     request(app.listen()).get('/')
       .expect(/basic:ejs/)
+      .expect(200, done)
+  })
+
+  it('it should use an engineSource other than consolidate when provided', function(done) {
+    const app = new Koa()
+        .use(views(__dirname, {
+          engineSource: {
+            'foo': () => Promise.resolve('hello')
+          }
+        }))
+        .use(function (ctx) {
+          return ctx.render('./fixtures/basic.foo')
+        })
+
+    request(app.listen()).get('/')
+        .expect(/hello/)
+        .expect(200, done)
+  })
+
+  // #82
+  describe('extension is ejs, frist visit basic.html then visit basic should render basic.ejs', function () {
+    const app = new Koa()
+        .use(views(__dirname, {
+          extension: 'ejs'
+        }))
+        .use(function (ctx, next) {
+          if (ctx.path === '/html') {
+            return ctx.render('./fixtures/basic.html')
+          }
+          return next()
+        })
+        .use(function (ctx, next) {
+          if (ctx.path === '/ejs') {
+            return ctx.render('./fixtures/basic')
+          }
+          return next()
+        })
+
+    const server = request(app.listen())
+
+    it('first visit html', function (done) {
+      server.get('/html')
+        .expect(/basic:html/)
+        .expect(200, done)
+    })
+
+    it('then visit ejs should render basic basic.ejs', function (done) {
+      server.get('/ejs')
+        .expect(/basic:ejs/)
+        .expect(200, done)
+    })
+  })
+
+  // #87
+  it('name with dot', function (done) {
+    const app = new Koa()
+    .use(views(__dirname))
+    .use(function (ctx) {
+      return ctx.render('./fixtures/basic.test')
+    })
+
+    request(app.listen()).get('/')
+      .expect('Content-Type', /html/)
+      .expect(/basic:html/)
+      .expect(200, done)
+  })
+
+  // #94
+  it('nunjucks with nunjucksEnv', function (done) {
+    const nunjucks = require('nunjucks')
+    const env = new nunjucks.Environment(
+      new nunjucks.FileSystemLoader(path.join(__dirname, 'fixtures'))
+    )
+    env.addFilter('shorten', function (str, count) {
+      return str.slice(0, count || 5)
+    })
+
+    const app = new Koa()
+    .use(views(path.join(__dirname, 'fixtures'), {
+      options: {
+        nunjucksEnv: env
+      },
+      map: { html: 'nunjucks' }
+    }))
+    .use(function (ctx) {
+      return ctx.render('nunjucks-filter', { message: 'this is a long message' })
+    })
+
+    request(app.listen()).get('/')
+      .expect('Content-Type', /html/)
+      .expect(/this </)
       .expect(200, done)
   })
 })
